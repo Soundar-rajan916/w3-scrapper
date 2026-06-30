@@ -8,6 +8,8 @@ import json
 import logging
 import random
 from contextlib import asynccontextmanager
+from pathlib import Path
+from subprocess import CalledProcessError
 from urllib.parse import urljoin, urlparse
 
 from bs4 import BeautifulSoup
@@ -29,6 +31,7 @@ CATALOG_URL = "https://www.w3schools.com/"
 async def lifespan(app: FastAPI):
     global playwright_instance, browser
     playwright_instance = await async_playwright().start()
+    await ensure_chromium_installed(playwright_instance.chromium.executable_path)
     browser = await playwright_instance.chromium.launch(headless=True)
     logger.info("Chromium browser started")
     yield
@@ -80,6 +83,21 @@ class ScrapeResult(BaseModel):
     language: str
     total_pages: int
     pages: list[PageData]
+
+
+async def run_command(*args: str) -> None:
+    process = await asyncio.create_subprocess_exec(*args)
+    exit_code = await process.wait()
+    if exit_code != 0:
+        raise CalledProcessError(exit_code, args)
+
+
+async def ensure_chromium_installed(executable_path: str) -> None:
+    if Path(executable_path).exists():
+        return
+
+    logger.info("Playwright Chromium missing, installing browser")
+    await run_command(sys.executable, "-m", "playwright", "install", "chromium")
 
 
 async def fetch_html(url: str) -> str:

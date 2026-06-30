@@ -33,6 +33,24 @@ python main.py
 
 Do not use `uvicorn --reload` here. `main.py` sets the Windows Proactor event loop policy so Playwright can launch Chromium correctly.
 
+## Render
+
+If you deploy this on Render, Playwright itself is not enough. Chromium must also be installed.
+
+This app now checks for the browser at startup and runs:
+
+```bash
+python -m playwright install chromium
+```
+
+if the Chromium binary is missing.
+
+If you want faster deploys, put the install in your Render build command too:
+
+```bash
+pip install -r requirements.txt && python -m playwright install chromium
+```
+
 ## Open API Docs
 
 - Swagger UI: `http://127.0.0.1:8000/docs`
