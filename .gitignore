@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+
+.venv/
+venv/
+venv313/
+
+.pytest_cache/
+.mypy_cache/
+
+playwright-report/
+test-results/
+
+*.json
+
+.env
+.env.*
